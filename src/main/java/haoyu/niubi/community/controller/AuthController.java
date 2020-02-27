@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 @Controller
@@ -29,8 +31,8 @@ import java.util.UUID;
     private UserMapper userMapper;
     @GetMapping("/callback")
     public String callback(@RequestParam(name="code")String code,
-                           @RequestParam(name="state")String state,
-                           HttpServletRequest request){
+                           @RequestParam(name="state")String state
+              , HttpServletResponse response) {
         AccesstokenDTO accesstokenDTO = new AccesstokenDTO();
         accesstokenDTO.setCode(code);
         accesstokenDTO.setRedirect_uri(redirect_uri);
@@ -39,15 +41,17 @@ import java.util.UUID;
         accesstokenDTO.setClient_id(client_id);
         String accessToken = githubProvider.getAccessToken(accesstokenDTO);
         GithubUser githubUser = githubProvider.getuser(accessToken);
-         if(githubUser != null){
+         if(githubUser != null && githubUser.getId() != null){
             User user = new User();
-            user.setToken(UUID.randomUUID().toString());
-            user.setAccount_id(String.valueOf(githubUser.getId()));
-            user.setGmt_create(System.currentTimeMillis());
-            user.setGmt_modified(user.getGmt_create());
+            String token = UUID.randomUUID().toString();//随机创建值赋值给token
+            user.setToken(token);
+            user.setAccountId(githubUser.getId());
+            user.setGmtCreate(System.currentTimeMillis());
+            user.setGmtModified(user.getGmtCreate());
+            user.setAvatarUrl(githubUser.getAvatar_url());
             user.setName(githubUser.getName());
             userMapper.insert(user);
-        request.getSession().setAttribute("user",githubUser);
+            response.addCookie(new Cookie("token",token));//Cookie 是通过response创建的
         return "redirect:/";
         }
         else {
