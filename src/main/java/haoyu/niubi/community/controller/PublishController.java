@@ -1,7 +1,6 @@
 package haoyu.niubi.community.controller;
 
 import haoyu.niubi.community.mapper.QuestionMapper;
-import haoyu.niubi.community.mapper.UserMapper;
 import haoyu.niubi.community.model.Question;
 import haoyu.niubi.community.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 public class PublishController {
     @Autowired
     private QuestionMapper questionMapper;
-    @Autowired
-    private UserMapper userMapper;
 
     @GetMapping("/publish")
     public String publish() {
@@ -32,20 +29,7 @@ public class PublishController {
             @RequestParam("tag") String tag,
             HttpServletRequest request, Model model
     ) {
-        User user = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("token")) {
-                    String token = cookie.getValue();
-                    user = userMapper.findbytoken(token);
-                    if (user != null) {
-                        request.getSession().setAttribute("user", user);
-                    }
-                    break;
-                }
-            }
-        }
+        User user = (User)request.getSession().getAttribute("user");
         if (user == null) {
             model.addAttribute("error", "用户未登录");
             return "publish";

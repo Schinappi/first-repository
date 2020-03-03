@@ -40,7 +40,7 @@ import java.util.UUID;
         accesstokenDTO.setClient_secret(client_secret);
         accesstokenDTO.setClient_id(client_id);
         String accessToken = githubProvider.getAccessToken(accesstokenDTO);
-        GithubUser githubUser = githubProvider.getuser(accessToken);
+        GithubUser githubUser = githubProvider.getUser(accessToken);
          if(githubUser != null && githubUser.getId() != null){
             User user = new User();
             String token = UUID.randomUUID().toString();//随机创建值赋值给token

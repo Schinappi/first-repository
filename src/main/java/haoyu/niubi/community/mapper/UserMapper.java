@@ -12,7 +12,7 @@ public interface UserMapper {
     @Insert("insert into user (ACCOUNT_ID,NAME,TOKEN,GMT_CREATE,GMT_MODIFIED,AVATAR_URL)values(#{accountId},#{name},#{token},#{gmtCreate},#{gmtModified},#{avatarUrl})")
     void insert(User user);
     @Select("select * from user where token = #{token}")
-    User findbytoken(@Param("token") String token);
+    User findByToken(@Param("token") String token);
     @Select("select * from user where ACCOUNT_ID = #{accountId}")
     User findByAccountId(@Param("accountId") Integer accountId);
     @Select("select * from user where ID = #{Id}")
