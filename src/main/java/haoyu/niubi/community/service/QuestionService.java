@@ -101,9 +101,10 @@ public class QuestionService {
 
     public QuestionDTO getById(Integer id) {
     Question question = questionMapper.getById(id);
+        Integer  creatorId = question.getCreator();
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question, questionDTO);
-        User user = userMapper.findById(id);
+        User user = userMapper.findById(creatorId);
         questionDTO.setUser(user);
         return  questionDTO;
     }
