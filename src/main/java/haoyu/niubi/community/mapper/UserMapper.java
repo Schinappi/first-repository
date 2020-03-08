@@ -2,10 +2,7 @@ package haoyu.niubi.community.mapper;
 
 
         import haoyu.niubi.community.model.User;
-        import org.apache.ibatis.annotations.Insert;
-        import org.apache.ibatis.annotations.Mapper;
-        import org.apache.ibatis.annotations.Param;
-        import org.apache.ibatis.annotations.Select;
+        import org.apache.ibatis.annotations.*;
 
 @Mapper
 public interface UserMapper {
@@ -17,4 +14,7 @@ public interface UserMapper {
     User findByAccountId(@Param("accountId") Integer accountId);
     @Select("select * from user where ID = #{Id}")
     User findById(@Param("Id") Integer Id);
+    @Update("update user set GMT_MODIFIED=#{gmtModified} ,TOKEN=#{token},NAME=#{name},AVATAR_URL=#{avatarUrl} where ACCOUNT_ID=#{accountId}")
+    void update(User user1);
+
 }

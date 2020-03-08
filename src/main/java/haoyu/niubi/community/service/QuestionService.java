@@ -39,6 +39,9 @@ public class QuestionService {
         if (page > totalPage) {
             page = totalPage;
         }
+        if(page == 0){
+            page = 1;
+        }
 
         paginationDTO.setPagination(totalPage, page);
         //size*(page-1)
@@ -79,6 +82,9 @@ public class QuestionService {
         if (page > totalPage) {
             page = totalPage;
         }
+        if(page ==0){
+            page =1;
+        }
 
         paginationDTO.setPagination(totalPage, page);
 
@@ -107,6 +113,16 @@ public class QuestionService {
         User user = userMapper.findById(creatorId);
         questionDTO.setUser(user);
         return  questionDTO;
+    }
+    public void createOrUpdate(Question question){
+        if(question.getId() == null){
+            question.setGmtCreate(System.currentTimeMillis());
+            question.setGmtModified(question.getGmtCreate());
+            questionMapper.create(question);
+        }else{
+            question.setGmtModified(System.currentTimeMillis());
+            questionMapper.update(question);
+        }
     }
 }
 
