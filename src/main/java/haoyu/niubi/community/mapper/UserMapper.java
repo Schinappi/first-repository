@@ -2,7 +2,10 @@ package haoyu.niubi.community.mapper;
 
 
         import haoyu.niubi.community.model.User;
+        import haoyu.niubi.community.model.UserExample;
         import org.apache.ibatis.annotations.*;
+
+        import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -16,5 +19,7 @@ public interface UserMapper {
     User findById(@Param("Id") Integer Id);
     @Update("update user set GMT_MODIFIED=#{gmtModified} ,TOKEN=#{token},NAME=#{name},AVATAR_URL=#{avatarUrl} where ACCOUNT_ID=#{accountId}")
     void update(User user1);
+    @Select("select * from user where id = id order by id ")
+    List<User> selectByUser(UserExample user);
 
 }

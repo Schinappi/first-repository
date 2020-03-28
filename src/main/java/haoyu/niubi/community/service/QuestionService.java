@@ -2,6 +2,8 @@ package haoyu.niubi.community.service;
 
 import haoyu.niubi.community.dto.PaginationDTO;
 import haoyu.niubi.community.dto.QuestionDTO;
+import haoyu.niubi.community.exception.CustomizeErrorCode;
+import haoyu.niubi.community.exception.CustomizeException;
 import haoyu.niubi.community.mapper.QuestionMapper;
 import haoyu.niubi.community.mapper.UserMapper;
 import haoyu.niubi.community.model.Question;
@@ -9,6 +11,7 @@ import haoyu.niubi.community.model.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,6 +110,9 @@ public class QuestionService {
 
     public QuestionDTO getById(Integer id) {
     Question question = questionMapper.getById(id);
+     if(question == null){
+         throw  new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+     }
         Integer  creatorId = question.getCreator();
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question, questionDTO);
@@ -116,13 +122,22 @@ public class QuestionService {
     }
     public void createOrUpdate(Question question){
         if(question.getId() == null){
-            question.setGmtCreate(System.currentTimeMillis());
             question.setGmtModified(question.getGmtCreate());
             questionMapper.create(question);
         }else{
             question.setGmtModified(System.currentTimeMillis());
-            questionMapper.update(question);
+           int update=questionMapper.update(question);
+           if(update != 1){
+               throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
         }
+}
+    }
+
+    public Integer incView(Integer id) {
+        Question question1 = questionMapper.getById(id);
+        question1.setViewCount(question1.getViewCount()+1);
+        questionMapper.updateView(question1);
+        return  question1.getViewCount();
     }
 }
 
