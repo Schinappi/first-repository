@@ -47,6 +47,12 @@ public class CommentService {
               throw new CustomizeException(CustomizeErrorCode.COMMENT_NOT_FOUND);
           }
           commentMapper.insert(comment);
+          //增加评论数
+            Comment parentComment = new Comment();
+            Integer parentId=comment.getParentId();
+            parentComment.setId(parentId);
+            parentComment.setCommentCount( commentMapper.selectCommentCount(parentId)+1);
+            commentMapper.incCommentCount(parentComment);
         }else{
                //回复问题
             Question question = questionMapper.getById(comment.getParentId());
@@ -55,14 +61,14 @@ public class CommentService {
             }
             commentMapper.insert(comment);
             question.setCommentCount(question.getCommentCount()+1);
-            questionMapper.updateComment(question);
+            questionMapper.incCommentCount(question);
         }
     }
 
-    public List<CommentDTO> listByQuestionId(Integer id) {
+    public List<CommentDTO> listByTargetId(Integer id, CommentTypeEnum type) {
         CommentDTO commentDTO = new CommentDTO();
         commentDTO.setParentId(id);
-        commentDTO.setType(CommentTypeEnum.QUESTION.getType());
+        commentDTO.setType(type.getType());
         List<Comment> comments=commentMapper.selectByCommentDTO(commentDTO);
         if(comments.size() == 0){
             return new ArrayList<>();

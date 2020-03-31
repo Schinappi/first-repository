@@ -1,8 +1,8 @@
 package haoyu.niubi.community.controller;
 
-import haoyu.niubi.community.dto.CommentCreateDTO;
 import haoyu.niubi.community.dto.CommentDTO;
 import haoyu.niubi.community.dto.QuestionDTO;
+import haoyu.niubi.community.enums.CommentTypeEnum;
 import haoyu.niubi.community.service.CommentService;
 import haoyu.niubi.community.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ public class QuestionController {
     @Autowired
     private CommentService commentService;
     @GetMapping("/question/{id}")
-    public String  question(@PathVariable(name="id")Integer id , Model model){
-        List<CommentDTO> commentDTOS =commentService.listByQuestionId(id);
+    public String  question(@PathVariable(name = "id") Integer id, Model model){
+        List<CommentDTO> commentDTOS =commentService.listByTargetId(id, CommentTypeEnum.QUESTION);
 QuestionDTO questionDTO = questionService.getById(id);
         Integer  viewCount = questionService.incView(id);
         model.addAttribute("viewCount",viewCount);

@@ -16,6 +16,12 @@ body{
     font-weight: normal;
     color: #999;
 }
+.sub-comments{
+    border-radius: 5px;
+    margin-top: 5px;
+    border: 1px solid #eee;
+    padding-top: 15px;
+}
 .profile .section{
     margin-top: 15px;
 }
@@ -42,8 +48,12 @@ hr {
     margin-right: 6px;
     cursor: pointer;
 }
+.menu .active{
+    color: #499ef3;
+}
 .menu .icon:hover{
     color: #2e6da4;
 }
+
 
 

@@ -9,8 +9,6 @@ public enum CommentTypeEnum {
         for (CommentTypeEnum typeEnum : CommentTypeEnum.values()) {
             if(typeEnum.getType() == type){
                 return true;
-            }else {
-                return false;
             }
         }
         return false;
