@@ -2,15 +2,15 @@ package haoyu.niubi.community.service;
 
 import haoyu.niubi.community.dto.CommentDTO;
 import haoyu.niubi.community.enums.CommentTypeEnum;
+import haoyu.niubi.community.enums.NotificationStatusEnum;
+import haoyu.niubi.community.enums.NotificationTypeEnum;
 import haoyu.niubi.community.exception.CustomizeErrorCode;
 import haoyu.niubi.community.exception.CustomizeException;
 import haoyu.niubi.community.mapper.CommentMapper;
+import haoyu.niubi.community.mapper.NotificationMapper;
 import haoyu.niubi.community.mapper.QuestionMapper;
 import haoyu.niubi.community.mapper.UserMapper;
-import haoyu.niubi.community.model.Comment;
-import haoyu.niubi.community.model.Question;
-import haoyu.niubi.community.model.User;
-import haoyu.niubi.community.model.UserExample;
+import haoyu.niubi.community.model.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +31,11 @@ public class CommentService {
     private QuestionMapper questionMapper;
 
     @Autowired
+    private NotificationMapper notificationMapper;
+    @Autowired
     private UserMapper userMapper;
     @Transactional
-    public void insert(Comment comment) {
+    public void insert(Comment comment, User commentator) {
         if(comment.getParentId() == null || comment.getParentId() == 0){
             throw new CustomizeException(CustomizeErrorCode.TARGET_PARM_NOT_FOUND);
         }
@@ -46,13 +48,16 @@ public class CommentService {
           if(comment1 == null){
               throw new CustomizeException(CustomizeErrorCode.COMMENT_NOT_FOUND);
           }
-          commentMapper.insert(comment);
+            Question question = questionMapper.getById(comment.getParentId());
+            commentMapper.insert(comment);
           //增加评论数
             Comment parentComment = new Comment();
             Integer parentId=comment.getParentId();
             parentComment.setId(parentId);
             parentComment.setCommentCount( commentMapper.selectCommentCount(parentId)+1);
             commentMapper.incCommentCount(parentComment);
+            //创建通知
+            createNotify(comment, comment1.getCommentator(), commentator.getName(), question.getTitle(), NotificationTypeEnum.REPLY_COMMENT);
         }else{
                //回复问题
             Question question = questionMapper.getById(comment.getParentId());
@@ -62,7 +67,25 @@ public class CommentService {
             commentMapper.insert(comment);
             question.setCommentCount(question.getCommentCount()+1);
             questionMapper.incCommentCount(question);
+            //创建通知
+            createNotify(comment, question.getCreator(),commentator.getName(),question.getTitle() ,NotificationTypeEnum.REPLY_QUESTION);
         }
+    }
+
+    private void createNotify(Comment comment, Integer receiver, String name, String title, NotificationTypeEnum notificationType) {
+        if(receiver == comment.getCommentator()){
+            return;
+        }
+        Notification notification = new Notification();
+        notification.setGmt_create(System.currentTimeMillis());
+        notification.setType(notificationType.getType());
+        notification.setOuterId(comment.getParentId());
+        notification.setNotifier(comment.getCommentator());
+        notification.setNotifierName(name);
+        notification.setOuterTitle(title);
+        notification.setStatus(NotificationStatusEnum.UNREAD.getStatus());
+        notification.setReceiver(receiver);
+        notificationMapper.insert(notification);
     }
 
     public List<CommentDTO> listByTargetId(Integer id, CommentTypeEnum type) {

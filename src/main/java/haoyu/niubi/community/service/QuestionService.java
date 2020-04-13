@@ -2,19 +2,23 @@ package haoyu.niubi.community.service;
 
 import haoyu.niubi.community.dto.PaginationDTO;
 import haoyu.niubi.community.dto.QuestionDTO;
+import haoyu.niubi.community.dto.QuestionQueryDTO;
 import haoyu.niubi.community.exception.CustomizeErrorCode;
 import haoyu.niubi.community.exception.CustomizeException;
 import haoyu.niubi.community.mapper.QuestionMapper;
 import haoyu.niubi.community.mapper.UserMapper;
 import haoyu.niubi.community.model.Question;
 import haoyu.niubi.community.model.User;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
@@ -23,12 +27,23 @@ public class QuestionService {
     @Autowired
     private UserMapper userMapper;
 
-    public PaginationDTO list(Integer page, Integer size) {
+    public PaginationDTO list(String search,Integer page, Integer size) {
+        if(StringUtils.isNotBlank(search)){
+            String[] strings = StringUtils.split(search, " ");
+            search = Arrays.stream(strings).collect(Collectors.joining("|"));
+    }
         PaginationDTO paginationDTO = new PaginationDTO();
 
         Integer totalPage;
-
-        Integer totalCount = questionMapper.count();
+        Integer totalCount = 0;
+        List<Question> questions ;
+            QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
+            questionQueryDTO.setSearch(search);
+            if(search != null) {
+                 totalCount = questionMapper.countBySearch(questionQueryDTO);
+            }else {
+                totalCount  = questionMapper.count();
+            }
 
         if (totalCount % size == 0) {
             totalPage = totalCount / size;
@@ -49,7 +64,13 @@ public class QuestionService {
         paginationDTO.setPagination(totalPage, page);
         //size*(page-1)
         Integer offset = size * (page - 1);
-        List<Question> questions = questionMapper.list(offset, size);
+        questionQueryDTO.setSize(size);
+        questionQueryDTO.setPage(offset);
+        if(search != null){
+         questions = questionMapper.selectBySearch(questionQueryDTO);
+        }else{
+            questions = questionMapper.list(offset, size);
+        }
         List<QuestionDTO> questionDTOList = new ArrayList<>();
 
         for (Question question : questions) {
@@ -60,7 +81,7 @@ public class QuestionService {
             questionDTOList.add(questionDTO);
         }
 
-        paginationDTO.setQuestions(questionDTOList);
+        paginationDTO.setData(questionDTOList);
         return paginationDTO;
     }
 
@@ -104,7 +125,7 @@ public class QuestionService {
             questionDTOList.add(questionDTO);
         }
 
-        paginationDTO.setQuestions(questionDTOList);
+        paginationDTO.setData(questionDTOList);
         return paginationDTO;
     }
 
@@ -119,9 +140,11 @@ public class QuestionService {
         User user = userMapper.findById(creatorId);
         questionDTO.setUser(user);
         return  questionDTO;
-    }
+}
     public void createOrUpdate(Question question){
-        if(question.getId() == null){
+        Question  question1 = questionMapper.getById(question.getId());
+        if(question1 == null){
+            question.setGmtCreate(System.currentTimeMillis());
             question.setGmtModified(question.getGmtCreate());
             questionMapper.create(question);
         }else{
@@ -138,6 +161,26 @@ public class QuestionService {
         question1.setViewCount(question1.getViewCount()+1);
         questionMapper.updateView(question1);
         return  question1.getViewCount();
+    }
+
+    public List<QuestionDTO> selectRelated(QuestionDTO questionDTO) {
+        Question question =new Question();
+        if(StringUtils.isBlank(questionDTO.getTag())){
+            return  new ArrayList<>();
+        }
+        String[] tags = StringUtils.split(questionDTO.getTag(), ",");
+        String regxp = Arrays.stream(tags).collect(Collectors.joining("|"));
+//        String replaceTag = StringUtils.replace(questionDTO.getTag(), ",", "|");
+//        question.setTag(replaceTag);
+        question.setTag(regxp);
+        question.setId(questionDTO.getId());
+        List<Question> questionList = questionMapper.selectRelated(question);
+        List<QuestionDTO> questionDTOS = questionList.stream().map(q -> {
+            QuestionDTO questionDTO1 = new QuestionDTO();
+            BeanUtils.copyProperties(q, questionDTO1);
+            return questionDTO1;
+        }).collect(Collectors.toList());
+        return questionDTOS;
     }
 }
 

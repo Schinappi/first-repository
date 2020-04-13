@@ -20,7 +20,7 @@ import java.util.List;
 @Controller
 public class CommentController {
     @Autowired
-    private CommentService commentService;
+    private  CommentService commentService;
     @ResponseBody
     @RequestMapping(value = "/comment",method = RequestMethod.POST)
     //CommentDTO是前端页面获取的值封装成一个对象
@@ -41,7 +41,7 @@ public class CommentController {
         comment.setGmtModified(System.currentTimeMillis());
         comment.setGmtCreate(System.currentTimeMillis());
         comment.setCommentator(user.getId());
-        commentService.insert(comment);
+        commentService.insert(comment,user);
         return ResultDTO.okOf();
     }
     @ResponseBody

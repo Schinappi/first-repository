@@ -20,14 +20,17 @@ public class QuestionController {
 
     @Autowired
     private CommentService commentService;
+
     @GetMapping("/question/{id}")
-    public String  question(@PathVariable(name = "id") Integer id, Model model){
-        List<CommentDTO> commentDTOS =commentService.listByTargetId(id, CommentTypeEnum.QUESTION);
-QuestionDTO questionDTO = questionService.getById(id);
-        Integer  viewCount = questionService.incView(id);
-        model.addAttribute("viewCount",viewCount);
-        model.addAttribute("question",questionDTO);
-        model.addAttribute("comments",commentDTOS);
+    public String question(@PathVariable(name = "id") Integer id, Model model) {
+        List<CommentDTO> commentDTOS = commentService.listByTargetId(id, CommentTypeEnum.QUESTION);
+        QuestionDTO questionDTO = questionService.getById(id);
+        List<QuestionDTO> relatedQuestions=questionService.selectRelated(questionDTO);
+        Integer viewCount = questionService.incView(id);
+        model.addAttribute("viewCount", viewCount);
+        model.addAttribute("question", questionDTO);
+        model.addAttribute("comments", commentDTOS);
+        model.addAttribute("relatedQuestions", relatedQuestions);
         return "question";
     }
 

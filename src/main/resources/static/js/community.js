@@ -22,12 +22,11 @@ function comment2target(targetId, type, content) {
             //如果成功隐藏对话框
             if (response.code == 200) {
                 window.location.reload();
-                $("#comment_section").hide();
             } else {
                 if (response.code == 2003) {
                     var confirm1 = confirm(response.message);
                     if (confirm1) {
-                        window.open("https://github.com/login/oauth/authorize?client_id=6f67a01d2d93cff1d8ad&redirect_uri=http://localhost:8832/callback&scope=user&state=1")
+                        window.open("https://github.com/login/oauth/authorize?client_id=6f67a01d2d93cff1d8ad&redirect_uri=http://localhost:8832/callback&scope=user&state=1");
                         window.localStorage.setItem("closable", true);
                     }
                 } else {
@@ -107,4 +106,20 @@ function collapseComments(e) {
             });
         }
     }
+}
+
+function selectTag(e) {
+    var value = e.getAttribute("data-tag");
+    var previous = $("#tag").val();
+    if (previous.indexOf(value) == -1) {
+        if (previous) {
+            $("#tag").val(previous + ',' + value);
+        } else {
+            $("#tag").val(value);
+        }
+    }
+}
+
+function showSelectTag() {
+    $("#select-tag").show();
 }
