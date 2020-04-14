@@ -27,23 +27,20 @@ public class QuestionService {
     @Autowired
     private UserMapper userMapper;
 
-    public PaginationDTO list(String search,Integer page, Integer size) {
-        if(StringUtils.isNotBlank(search)){
-            String[] strings = StringUtils.split(search, " ");
-            search = Arrays.stream(strings).collect(Collectors.joining("|"));
-    }
-        PaginationDTO paginationDTO = new PaginationDTO();
-
+    public PaginationDTO list(String search, Integer page, Integer size) {
         Integer totalPage;
         Integer totalCount = 0;
-        List<Question> questions ;
-            QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
-            questionQueryDTO.setSearch(search);
-            if(search != null) {
-                 totalCount = questionMapper.countBySearch(questionQueryDTO);
-            }else {
-                totalCount  = questionMapper.count();
-            }
+        PaginationDTO paginationDTO = new PaginationDTO();
+        QuestionQueryDTO questionQueryDTO = new QuestionQueryDTO();
+        totalCount = questionMapper.count();
+        if (StringUtils.isNotBlank(search)) {
+            String[] strings = StringUtils.split(search, " ");
+            search = Arrays.stream(strings).collect(Collectors.joining("|"));
+            totalCount = questionMapper.countBySearch(questionQueryDTO);
+        }
+        List<Question> questions;
+
+        questionQueryDTO.setSearch(search);
 
         if (totalCount % size == 0) {
             totalPage = totalCount / size;
@@ -57,7 +54,7 @@ public class QuestionService {
         if (page > totalPage) {
             page = totalPage;
         }
-        if(page == 0){
+        if (page == 0) {
             page = 1;
         }
 
@@ -66,9 +63,9 @@ public class QuestionService {
         Integer offset = size * (page - 1);
         questionQueryDTO.setSize(size);
         questionQueryDTO.setPage(offset);
-        if(search != null){
-         questions = questionMapper.selectBySearch(questionQueryDTO);
-        }else{
+        if (StringUtils.isNotBlank(search)) {
+            questions = questionMapper.selectBySearch(questionQueryDTO);
+        } else {
             questions = questionMapper.list(offset, size);
         }
         List<QuestionDTO> questionDTOList = new ArrayList<>();
@@ -85,7 +82,7 @@ public class QuestionService {
         return paginationDTO;
     }
 
-    public PaginationDTO  list(Integer userId, Integer page, Integer size) {
+    public PaginationDTO list(Integer userId, Integer page, Integer size) {
         PaginationDTO paginationDTO = new PaginationDTO();
 
         Integer totalPage;
@@ -97,8 +94,8 @@ public class QuestionService {
         } else {
             totalPage = totalCount / size + 1;
         }
-        if(totalPage == 0){
-            totalPage =1;
+        if (totalPage == 0) {
+            totalPage = 1;
         }
         if (page < 1) {
             page = 1;
@@ -106,8 +103,8 @@ public class QuestionService {
         if (page > totalPage) {
             page = totalPage;
         }
-        if(page ==0){
-            page =1;
+        if (page == 0) {
+            page = 1;
         }
 
         paginationDTO.setPagination(totalPage, page);
@@ -130,43 +127,44 @@ public class QuestionService {
     }
 
     public QuestionDTO getById(Integer id) {
-    Question question = questionMapper.getById(id);
-     if(question == null){
-         throw  new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
-     }
-        Integer  creatorId = question.getCreator();
+        Question question = questionMapper.getById(id);
+        if (question == null) {
+            throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+        }
+        Integer creatorId = question.getCreator();
         QuestionDTO questionDTO = new QuestionDTO();
         BeanUtils.copyProperties(question, questionDTO);
         User user = userMapper.findById(creatorId);
         questionDTO.setUser(user);
-        return  questionDTO;
-}
-    public void createOrUpdate(Question question){
-        Question  question1 = questionMapper.getById(question.getId());
-        if(question1 == null){
+        return questionDTO;
+    }
+
+    public void createOrUpdate(Question question) {
+        Question question1 = questionMapper.getById(question.getId());
+        if (question1 == null) {
             question.setGmtCreate(System.currentTimeMillis());
             question.setGmtModified(question.getGmtCreate());
             questionMapper.create(question);
-        }else{
+        } else {
             question.setGmtModified(System.currentTimeMillis());
-           int update=questionMapper.update(question);
-           if(update != 1){
-               throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            int update = questionMapper.update(question);
+            if (update != 1) {
+                throw new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            }
         }
-}
     }
 
     public Integer incView(Integer id) {
         Question question1 = questionMapper.getById(id);
-        question1.setViewCount(question1.getViewCount()+1);
+        question1.setViewCount(question1.getViewCount() + 1);
         questionMapper.updateView(question1);
-        return  question1.getViewCount();
+        return question1.getViewCount();
     }
 
     public List<QuestionDTO> selectRelated(QuestionDTO questionDTO) {
-        Question question =new Question();
-        if(StringUtils.isBlank(questionDTO.getTag())){
-            return  new ArrayList<>();
+        Question question = new Question();
+        if (StringUtils.isBlank(questionDTO.getTag())) {
+            return new ArrayList<>();
         }
         String[] tags = StringUtils.split(questionDTO.getTag(), ",");
         String regxp = Arrays.stream(tags).collect(Collectors.joining("|"));
