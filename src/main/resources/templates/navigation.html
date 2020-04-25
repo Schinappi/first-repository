@@ -26,8 +26,8 @@
                         <a href="/publish">提问</a>
                     </li>
                     <li><a href="/profile/replies">通知<span class="badge" th:text="${session.unreadCount}"></span></a></li>
-                    <li th:if="${session.user} eq null"><a
-                            href="https://github.com/login/oauth/authorize?client_id=6f67a01d2d93cff1d8ad&redirect_uri=http://localhost:8832/callback&scope=user&state=1">登录</a>
+                    <li th:if="${session.user} eq null">
+                        <a th:href="@{https://github.com/login/oauth/authorize(client_id='6f67a01d2d93cff1d8ad',redirect_uri=${#httpServletRequest.getRequestURL()+'callback'},scope='user',state=1)}">登录</a>
                     </li>
                     <li class="dropdown" th:if="${session.user} != null">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
