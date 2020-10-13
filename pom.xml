@@ -128,7 +128,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-            <version>4.12</version>
+            <version>4.13.1</version>
         </dependency>
     </dependencies>
     <!--包可以把项目打包成jar包，不用再服务器部署Tomcat-->
